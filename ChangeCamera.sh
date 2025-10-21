@@ -14,7 +14,8 @@ if [[ -n "$DEVICE" ]]; then
     # Change the Primary Camera...
      sudo mv /dev/video0 /dev/videoOld
      sudo mv $DEVICE /dev/video0
-
+     echo "Camera Changed SuccessFully...."
+     v4l2-ctl --list-devices
 else
     echo "C270 Webcam not found!"
     exit 1
