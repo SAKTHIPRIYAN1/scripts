@@ -1,22 +1,38 @@
-# this is the Script to Change the Primary Camera in My system from in-built camera to external camera..
+#!/bin/bash
 
-# list Devices...
+# Script to change the primary camera
+
+echo "Available camera devices:"
+echo "-------------------------"
 v4l2-ctl --list-devices
+echo "-------------------------"
 
-# Get the device name matching 'C720' and extract its corresponding /dev/videoX device
-DEVICE=$(v4l2-ctl --list-devices | grep -A 1 'C270' | tail -n 1 | tr -d '\t')
+# Ask user for camera device
+read -p "Enter the video device you want to make primary (e.g. /dev/video2): " DEVICE
 
-# Check if a device was found
-if [[ -n "$DEVICE" ]]; then
-    echo "C270 Webcam found at: $DEVICE"
-    echo "Changing The /dev/video0 to C270 ..."
-    
-    # Change the Primary Camera...
-     sudo mv /dev/video0 /dev/videoOld
-     sudo mv $DEVICE /dev/video0
-     echo "Camera Changed SuccessFully...."
-     v4l2-ctl --list-devices
-else
-    echo "C270 Webcam not found!"
+# Validate input
+if [[ ! "$DEVICE" =~ ^/dev/video[0-9]+$ ]]; then
+    echo "Invalid input. Please enter a device like /dev/video2"
     exit 1
 fi
+
+# Check if device exists
+if [[ ! -e "$DEVICE" ]]; then
+    echo "Device $DEVICE not found!"
+    exit 1
+fi
+
+echo
+echo "Selected camera: $DEVICE"
+echo "Changing primary camera..."
+
+# Backup current video0
+sudo mv /dev/video0 /dev/videoOld
+
+# Move selected camera to video0
+sudo mv "$DEVICE" /dev/video0
+
+echo "Camera changed successfully!"
+echo
+echo "Current devices:"
+v4l2-ctl --list-devices
